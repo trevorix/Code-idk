@@ -1,0 +1,120 @@
+using System;
+
+namespace dnd_roll_chance
+{
+    class Program
+    {
+        static double MathChance(int dc, int mod, int adv)
+        {
+            double gaming;
+            if (adv == 0)
+            {
+                if (mod >= dc || dc == 1) //chance of getting nat 1 [modifier higher than dc] || [dc is 1]
+                    gaming = 95;
+                else if (mod <= 0 & dc >= 20) //chance nat 20 [modifier is 0 or less] & dc >= 20
+                    gaming = 5;
+                else
+                    gaming = (1 - (((dc - mod) - 1) / 20.0)) * 100; //1 - miss chance
+                return gaming;
+            }
+            else if (adv == 1)
+            {
+                if (mod >= dc || dc == 1) //chance of getting nat 1 [modifier higher than dc] || [dc is 1]
+                    gaming = 99.75;
+                else if (mod <= 0 & dc >= 20) //chance nat 20 [modifier is 0 or less] & dc >= 20
+                    gaming = 9.75;
+                else
+                    gaming = (1 - Math.Pow((dc - mod - 1) / 20.0, 2)) * 100; // 1 - (miss chance)^2
+                return gaming;
+            }
+            else if (adv == -1)
+            {
+                if (mod >= dc || dc == 1) //chance of getting nat 1 [modifier higher than dc] || [dc is 1]
+                    gaming = 90.25;
+                else if (mod <= 0 & dc >= 20) //chance of getting nat 20 [modifier is 0 or less] & dc is 20 or higher
+                    gaming = 0.25;
+                else
+                    gaming = Math.Pow(1 - (dc - mod - 1) / 20.0, 2) * 100;//(1 - miss chance)^2
+                return gaming;
+            }
+            return 0;
+        }
+        public static void ClearLine()//code snippet: https://stackoverflow.com/a/19105353
+        {
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, Console.CursorTop);
+        }
+        public static void CenterLine(string str)//code snippet: https://stackoverflow.com/a/21917249
+        {
+            Console.WriteLine(String.Format("{0," + ((Console.WindowWidth / 2) +
+                (str.Length / 2)) + "}", str));
+        }
+        static double TryChance(int dc, int mod, int adv)
+        {
+            Console.WriteLine("\n\n\n\n\n");
+            Console.WriteLine(" ");
+            double count = 0;
+            int LOG = 10;//EXPONENTIAL--NO HIGHER THAN 9(use 7)
+            double x = 0;
+            double testto = Math.Pow(10, LOG);
+            string bar = "[";
+            Random rand = new Random();
+            for (double test = 0; test < testto; test++)
+            {
+                int ran = rand.Next(1, 21);
+                if (ran == 1 || ran + mod < dc)
+                {
+                    if (adv == 1)
+                    {
+                        ran = rand.Next(1, 21);
+                        if (ran == 20 || ran + mod >= dc && ran != 1)
+                            count++;
+                    }
+                }
+                else if (ran == 20 || ran + mod >= dc)
+                {
+                    if (adv == -1)
+                    {
+                        ran = rand.Next(1, 21);
+                        if (ran == 20 || ran + mod >= dc && ran != 1)
+                            count++;
+                    }
+                    else
+                        count++;
+                }
+                else
+                    throw new Exception($"{test},{ran},{count}???");
+                #region progress bar
+                if (Math.Round(test / testto, 2)> Math.Round(x,2))
+                {
+                    x = Math.Round(test / testto, 2);
+                    int test2 = 0;
+                    while (test2 < Math.Floor(x*10)) 
+                    {
+                        test2++;
+                        bar += "■";
+                    }
+                    for (int count8 = 1; count8 < 11 - test2; count8++)
+                        bar += " ";
+                    bar += "]";
+                    ClearLine();
+                    CenterLine(x.ToString("P0") + bar);
+                    bar = "[";
+                }
+            }
+            for(int count68 = 0;count68<5;count68++)
+                ClearLine();
+            #endregion 
+            return Math.Round(count / testto * 100,2);
+        }
+        static void Main()
+        {
+            int dc = 20;
+            int mod = 0;
+            int adv = -1; // 0 for no adv || 1 for adv || -1 for dis 
+            CenterLine($"Tested {TryChance(dc,mod,adv)}%");
+            CenterLine($"Solved {MathChance(dc, mod, adv)}%");
+        }
+    }
+}
